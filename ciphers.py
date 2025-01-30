@@ -1,5 +1,6 @@
 import string
-
+import pandas as pd
+import os
 
 def caesar(plaintext, key: str, encrypt=True):
     plaintext = plaintext.lower()
@@ -45,8 +46,33 @@ def decrypt(cipher):
     decrypted = cipher(input_text, key, encrypt=False)
     return decrypted
 
-if __name__ == '__main__':
-    encrypted = encrypt(vigenere)
-    print(encrypted)
-    decrypted = decrypt(vigenere)
+def write_message(sender:str, receiver:str, message:str):
+    path = "messages.csv"
+    if os.path.exists(path):
+        df = pd.read_csv(path)
+        pd.concat(df, pd.DataFrame({'sender': sender, 'receiver': receiver, "message": message}), axis=0, ignore_index=True)
+    else:
+        df = pd.DataFrame({"sender": [sender], "receiver": [receiver], "message": [message]})
+
+    df.to_csv(path, index=False)
+
+
+def read_message(sender, receiver):
+    path = "messages.csv"
+    df = pd.read_csv(path)
+    message = df.loc[(df['sender']==sender) & (df['receiver']==receiver), 'message']
+    return message
+    
+def write(cipher, sender, receiver):
+    encrypted = encrypt(cipher)
+    print(f"Message encrypted: {encrypted}")
+    write_message(sender, receiver, encrypted)
+
+def read(cipher, sender, receiver):
+    message = read_message(sender, receiver)
+    print(f"Message encrypted: {message}")
+    decrypted = decrypt(cipher)
     print(decrypted)
+
+if __name__ == '__main__':
+    write(caesar, "test1", "test2")
